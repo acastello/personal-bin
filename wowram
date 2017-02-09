@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for f in /proc/* ; do
+    if [ -f "$f/comm" ] && [ "Wow.exe" = "$(cat "$f/comm")" ] ; then
+        pagesize=`getconf PAGESIZE`
+        npages=$(cat "$f/statm" | awk '{print $2}')
+        echo $(basename "$f"): $(( $pagesize * $npages / 1024 / 1024 ))M
+    fi
+done

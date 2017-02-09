@@ -1,0 +1,20 @@
+#!/bin/bash
+
+sofile=/usr/lib/ksm_preload/libksm_preload.so
+sofile2=/usr/lib32/ksm_preload/libksm_preload.so
+
+case " $LD_PRELOAD " in
+    (*[:\ ]"$sofile"[:\ ]*) ;;
+    (*) export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD }$sofile $sofile2"
+        ;;
+esac
+
+export WINEDLLOVERRIDES="mscoree,mshtml="
+
+if [ $# -gt 0 ] ; then
+    path="/opt/World of Warcraft 3.3.5a/$1/Wow.exe"
+else
+    path="/opt/World of Warcraft 3.3.5a/Wow.exe"
+fi
+
+exec wine "$path" # 2>/dev/null

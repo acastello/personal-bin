@@ -1,0 +1,4 @@
+#!/bin/bash
+
+xrdb $HOME/.Xresources
+urxvt -title floating_urxvt -geometry 82x32 -e sh -c 'colors.sh ; exec bash'

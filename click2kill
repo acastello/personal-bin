@@ -1,0 +1,12 @@
+#!/usr/bin/runhaskell
+
+import System.Environment
+import System.Process
+import System.Posix.Types
+
+main :: IO ()
+main = do
+    args <- getArgs
+    pid <- ((!!2) . words) <$> readProcess "xprop" ["_NET_WM_PID"] ""
+    putStrLn $ "killing " ++ pid
+    callProcess "kill" (args++[pid])

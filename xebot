@@ -1,0 +1,12 @@
+#!/bin/bash
+
+d=0
+while [ -e /tmp/.X$d-lock ] ; do
+    d=$(($d + 1))
+done
+
+display=":$d"
+unset d
+
+xinit /bin/sh -c "twm & wew > /dev/null 2>&1 & cd $HOME/src/wotlk/src/WoW/Wotlk/ ; xterm -e boxlaunch.exe Route" \
+    -- /usr/bin/Xephyr $display -screen 512x382 -glamor

@@ -1,9 +1,48 @@
 #!/usr/bin/runhaskell
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 import Data.Char
 import Data.List
 import System.Environment
 import Text.Printf
+
+class Show' a => Justifiable a where
+    just :: Int -> a -> String
+
+class Show' a where
+    show' :: a -> String
+
+instance Show' Integer where
+    show' = show
+
+instance Show' String where
+    show' str = str
+
+data J a = JL a | JR a
+
+instance Show' a => Show' (J a) where
+    show' (JL a) = show' a
+    show' (JR a) = show' a
+
+instance Show' a => Justifiable (J a) where
+    just n (JL a) = printf "%.-*s" n (show' a)
+    just n (JR a) = printf "%.*s" n (show' a)
+
+columned :: Justifiable a => [[a]] -> String
+columned js = unlines $ fmap unwords $ fmap (zipWith ($) (just <$> widths)) $ js
+  where
+      widths = maximum <$> fmap (length' . show') <$> js
+
+columned' :: [[String]] -> String
+columned' ss = unlines $ fmap unwords $ fmap (zipWith ($) (pf <$> widths)) $ ss
+  where
+      widths = maximum <$> fmap length' <$> transpose ss
+      pf n x = printf "%-*s" (n + length x - length' x) x
+
+length' :: String -> Int
+length' ('\ESC':xs) = length' (dropWhile (/= '\STX') xs) -1
+length' (x:xs) = 1 + length' xs
+length' [] = 0
 
 data Level = L4 String Int Int Int Int | L3 String Int Int Int
 
@@ -44,6 +83,7 @@ instance Show Ranges where
 
         (xs', xs'') = let (a,b) = length xs `divMod` 2 in splitAt (a+b) xs
 
+        merge :: [String] -> [String] -> String
         merge xs ys = concat $ zipWith 
                       (merge' (maximum $ length <$> xs)) xs (ys ++ repeat "")
         merge' n x y = printf "%-*s   %s\n" n x y
@@ -55,9 +95,11 @@ instance Show Ranges where
                 mnam = maximum $ (\(R n _ _) -> length $ n) <$> xs
                 mlen = maximum $ (\(R _ a _) -> length $ show a) <$> xs
 
-rdf = Rs [ R "Ragefire Chasm"     15 22
+rdf = Rs [ R "Ragefire Chasm"     15 21
          , R "Deadmines"          15 25
          , R "Wailling Caverns"   15 25
+         , R "Shadowfang Keep"    16 26
+         , R "Blackfathom Deeps"  19 29
 
          , R "Razorfen Kraul"     22 32
          , R "Gnomeregan"         23 33
@@ -83,6 +125,100 @@ rdf = Rs [ R "Ragefire Chasm"     15 22
          , R "Stratholme: Undead" 57 60
          ]
 
+data Class = Warrior | Paladin | DeathKnight | Shaman | Hunter | Druid | Rogue
+              | Priest | Warlock | Mage
+              deriving (Eq, Ord)
+classes = [Warrior, Paladin, DeathKnight, Shaman, Hunter, Druid, Rogue, Priest
+          , Warlock, Mage]
+
+instance Show Class where
+    show cls = (\(cs,str) -> col [48,5,cs,1,30] ++ str ++ col []) $ case cls of
+        Warrior     -> (95,  "Warrior")
+        Paladin     -> (212, "Paladin")
+        DeathKnight -> (124, "Death Knight")
+        Shaman      -> (27,  "Shaman")
+        Hunter      -> (83,  "Hunter")
+        Druid       -> (166, "Druid")
+        Rogue       -> (185, "Rogue")
+        Priest      -> (7,   "Priest")
+        Warlock     -> (98,  "Warlock")
+        Mage        -> (86,  "Mage")
+
+d1 :: String
+d1 = columned'
+    [ f Warrior   "" ""
+--  , g           "Head"      "[Schol] Gandling"
+--  , g           "Shoulder"  "[UBRS]  Rend Blackhand"
+--  , g           "Chest"     "[UBRS]  Drakkisath"
+--  , g           "Wrists"    ".LBRS.  Firebrand/Smolderthorn"
+    , g           "Hands"     "[Strat] Ramstein"
+    , g           "Waist"     ".Strat. Patchwork Horror"
+--  , g           "Legs"      "[Strat] Rivendare"
+    , g           "Feet"      "[Schol] Kirtonos"
+
+    , f Paladin   "" ""
+--  , g           "Head"      "[Schol] Gandling"
+--  , g           "Shoulder"  "[UBRS]  The Beast"
+--  , g           "Chest"     "[UBRS]  Drakkisath"
+    , g           "Wrists"    ".Schol. Risen Prot/Warr"
+    , g           "Hands"     "[Strat] Timmy the Cruel"
+    , g           "Waist"     ".Strat. Rockwing"
+--  , g           "Legs"      "[Strat] Rivendare"
+--  , g           "Feet"      "[Strat] Balnazzar"
+
+    , f Shaman    "" ""
+--  , g           "Head"      "[Schol] Gandling"
+    , g           "Shoulder"  "[UBRS]  Gyth"
+--  , g           "Chest"     "[UBRS]  Drakkisath"
+    , g           "Wrists"    ".Strat. Crypt Beast/Crawler"
+--  , g           "Hands"     "[UBRS]  Pyroguard"
+    , g           "Waist"     ".LBRS.  Smolderthorn/Flamescale"
+--  , g           "Legs"      "[Strat] Rivendare"
+--  , g           "Feet"      "[LBRS]  Omokk"
+
+    , f Hunter    "" ""
+    , g           "Head"      "[Schol] Gandling"
+--  , g           "Shoulder"  "[UBRS]  Wyrmthalak"
+    , g           "Chest"     "[UBRS]  Drakkisath"
+    , g           "Wrists"    ".Strat. Fleshflayer Ghoul"
+--  , g           "Hands"     "[LBRS]  Voone"
+    , g           "Waist"     ".LBRS.  Firebrand/Smolderthorn"
+    , g           "Legs"      "[Strat] Rivendare"
+--  , g           "Feet"      "[LBRS]  Omokk"
+
+--  , f Priest    "" ""
+--  , g           "Head"      "[Schol] Gandling"
+--  , g           "Shoulder"  "[UBRS]  Solakar"
+--  , g           "Chest"     "[UBRS]  Drakkisath"
+--  , g           "Wrists"    ".Strat. trash"
+--  , g           "Hands"     "[Strat] Galford"
+--  , g           "Waist"     ".LBRS.  trash"
+--  , g           "Legs"      "[Strat] Rivendare"
+--  , g           "Feet"      "[Strat] Maleki"
+
+    , f Warlock   "" ""
+    , g           "Head"      "[Schol] Gandling"
+--  , g           "Shoulder"  "[Schol] Jandice Barov"
+--  , g           "Chest"     "[UBRS]  Drakkisath"
+    , g           "Wrists"    ".LBRS.  Dreadweaver/Summoner/Seer"
+--  , g           "Hands"     "[Schol] Polkelt"
+    , g           "Waist"     ".Strat. Necromancer/Shadowcaster"
+--  , g           "Legs"      "[Strat] Rivendare"
+--  , g           "Feet"      "[Strat] Anastari"
+
+    , f Mage      "" ""
+--  , g           "Head"      "[Schol] Gandling"
+--  , g           "Shoulder"  "[Schol] Ras"
+--  , g           "Chest"     "[UBRS]  Drakkisath"
+    , g           "Wrists"    ".LBRS.  Fire Tongue/Pyromancer"
+--  , g           "Hands"     "[Schol] Doctor Theolen"
+    , g           "Waist"     ".LBRS.  Battle Mage/Mystic/Sorc"
+--  , g           "Legs"      "[Strat] Rivendare"
+    , g           "Feet"      "[Strat] Forresten"
+    ] where
+      f x y z = [show x, y, z]
+      g y z = ["", y, z]
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -92,6 +228,7 @@ main = do
     case arg of
         "mining"  -> foldMap print mining
         "rdf"     -> putStr (show rdf)
+        "d1"      -> putStr d1
 
 -- util
 col [] = col [0]

@@ -1,9 +1,33 @@
 #!/bin/bash
 
+fggre="[32m"
+fgyel="[33m"
+fgred="[31m"
+rever="[7m"
+bold="[1m"
+reset="[0m"
+
+
+
 for f in /proc/* ; do
     if [ -f "$f/comm" ] && [ "Wow.exe" = "$(cat "$f/comm")" ] ; then
         pagesize=`getconf PAGESIZE`
         npages=$(cat "$f/statm" | awk '{print $2}')
-        echo $(basename "$f"): $(( $pagesize * $npages / 1024 / 1024 ))M
+        mem=$(( $pagesize * $npages / 1024 / 1024 ))
+
+        pidpre=""
+        mempre=""
+
+        if [ "$mem" -gt 1200 ] ; then
+            pidpre="$fgred$rever"
+        elif [ "$mem" -gt 1000 ] ; then
+            mempre="$bold$fgred"
+        elif [ "$mem" -gt 700 ] ; then
+            mempre="$fgyel"
+        elif [ "$mem" -gt 500 ] ; then
+            mempre="$fggre"
+        fi
+        echo -e "$pidpre"$(basename "$f"): "$mempre$mem$reset"M
     fi
 done
+

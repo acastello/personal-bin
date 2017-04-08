@@ -1,0 +1,12 @@
+#!/bin/sh
+
+d=0
+
+while [ -e /tmp/.X$d-lock ] ; do
+    d=$(($d + 1))
+done
+
+display=":$d"
+
+xinit /bin/sh -c 'xrdb -merge "$HOME/.Xresources" ; urxvt' \
+    -- `which Xephyr` $display $@

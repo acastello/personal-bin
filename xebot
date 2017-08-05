@@ -21,16 +21,11 @@ unset d
 shcmd="cd $HOME/src/wotlk/src/WoW/Wotlk/"
 
 { xinit /bin/sh -c "vglrun wew > /dev/null 2>&1" \
-    -- /usr/bin/Xephyr $display -screen 622x513 -softCursor ; \
+    -- /usr/bin/Xephyr $display -screen 622x513 -softCursor > /dev/null 2>&1 ; \
     exit ; } &
 
 { cd "$HOME/src/wotlk/src/WoW/Wotlk/" ; \
     export DISPLAY=$display ; \
-    # export PS1="\e[1m(\e[0mxebot \e[1;32m$display \e[34m\W\e[37m)\e[0m\$ " ; \
     export PS1="\[\e[1m\](\[\e[0m\]xebot \[\e[1;32m\]$display \[\e[34m\]\W\[\e[37m\])\[\e[0m\]\$ " ; \
-    # export PS1="(xebot $display \W)\$ " ; \
-    sleep 1; \
     bash --norc ; }
 
-kill %1
-sleep 2

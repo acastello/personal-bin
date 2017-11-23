@@ -1,0 +1,5 @@
+#!/bin/bash
+
+dir="/tmp/10minutemail-$(date +%s)"
+chromium -incognito --user-data-dir=$dir "10minutemail.com"
+rm -rf $dir

@@ -226,7 +226,7 @@ main = do
           [] -> "rdf"
           (x:_) -> x
     case arg of
-        "mining"  -> foldMap print mining
+        "mining"  -> mapM_ print mining
         "rdf"     -> putStr (show rdf)
         "d1"      -> putStr d1
 

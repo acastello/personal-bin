@@ -9,14 +9,13 @@ typedef struct __block {
     char class[STRL+1];
     char name[STRL+1];
     struct __block *children;
+    size_t children_size;
     size_t n;
 } block_t;
 
-typedef struct {
-    HWND hwnds[128];
-    char strs[128][2][STRL+1];
-    size_t n;
-} entries_t;
+#define NULL_BLOCK ((block_t) { .hwnd = "", .class = "", .name = "", .children = NULL, .children_size = 0, .n = 0 })
+
+block_t new_block(HWND);
 
 void free_block(block_t block)
 {
@@ -27,7 +26,7 @@ void free_block(block_t block)
     free(block.children);
 }
 
-void __print_block(size_t n, size_t marg0, size_t marg1, block_t block)
+void __print_block(int n, int marg0, int marg1, block_t block)
 {
     // printf("%*s%*s \"%*s\" \"%s\"\n", n, "", marg0, block.hwnd, marg1, block.class, block.name);
     printf("%*s%-*s %-*s %s\n", n, "", marg0, block.hwnd, marg1, block.class, block.name);
@@ -59,46 +58,33 @@ BOOL CALLBACK PrintWindowProps(HWND hwnd, LPARAM lParam)
     return TRUE;
 }
 
-BOOL CALLBACK fill_entries(HWND hwnd, LPARAM lParam)
+BOOL CALLBACK fill_block(HWND hwnd, LPARAM lParam)
 {
-    entries_t *entries = (entries_t *) lParam;
-    size_t n = entries->n++;
-    entries->hwnds[n] = hwnd;
-    GetClassName(hwnd, entries->strs[n][0], STRL);
-    GetWindowText(hwnd, entries->strs[n][1], STRL);
+    block_t *block = (block_t *) lParam;
+    size_t n = block->n++;
+    if (n == block->children_size)
+        block->children = realloc(block->children, 1 + block->children_size * 2);
+    block->children[n] = new_block(hwnd);
+    // printf("%s, %s\n", entries->strs[n][0], entries->strs[n][1]);
     return TRUE;
 }
 
-block_t new_block(HWND hwnd, char *class, char* name)
+block_t new_block(HWND hwnd)
 {
-    block_t block = { .n = 0 } ;
+    block_t block = NULL_BLOCK;
     snprintf(block.hwnd, STRL, "%p", (void *) hwnd);
-    strncpy(block.class, class, STRL);
-    strncpy(block.name, name, STRL);
+    GetClassName(hwnd, block.class, STRL);
+    GetWindowText(hwnd, block.name, STRL);
 
-    entries_t entries = { .n = 0 };
-    EnumChildWindows(hwnd, fill_entries, (LPARAM) &entries);
+    EnumChildWindows(hwnd, fill_block, (LPARAM) &block);
 
-    if (entries.n > 0) {
-        block_t *blocks = malloc(entries.n * sizeof(block_t));
-        int i;
-
-        for (i = 0; i < entries.n; i++) {
-            blocks[i] = new_block(entries.hwnds[i], entries.strs[i][0], entries.strs[i][1]); 
-        }
-        block.n = entries.n;
-        block.children = blocks; 
-    }
     return block;
 }
 
 block_t complete_block(void)
 {
     HWND hwnd = GetDesktopWindow();
-    static char class[STRL+1], name[STRL+1];
-    GetClassName(hwnd, class, STRL);
-    GetWindowText(hwnd, name, STRL);
-    return new_block(hwnd, class, name);
+    return new_block(hwnd);
 }
 
 int main(void)
@@ -106,6 +92,7 @@ int main(void)
 //     HWND root = GetDesktopWindow();
 //     EnumChildWindows(root, PrintWindowProps, 0);
 //     return 0;
+    // complete_block();
     print_block(complete_block());
     return 0;
 }

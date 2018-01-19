@@ -5,9 +5,8 @@ while [ -e /tmp/.X$d-lock ] ; do
     d=$(($d + 1))
 done
 
-display=":$d"
-
-WINEPREFIX="/tmp/.winebot-$d"
+export display=":$d" 
+export WINEPREFIX="/tmp/.winebot-$d"
 
 if [ ! -d "$WINEPREFIX" ] ; then
     install -d "$WINEPREFIX"
@@ -17,7 +16,6 @@ if [ ! -d "$WINEPREFIX" ] ; then
     ln -s "$HOME/.wine/drive_c/Program Files (x86)" "$WINEPREFIX/drive_c/"
 fi
 
-export WINEPREFIX
 unset d
 
 shcmd="cd $HOME/src/wotlk/src/WoW/Wotlk/"

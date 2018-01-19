@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+GREEN=`echo -e '\033[92m'`
+RED=`echo -e '\033[91m'`
+CYAN=`echo -e '\033[96m'`
+BLUE=`echo -e '\033[94m'`
+YELLOW=`echo -e '\033[93m'`
+MAGENTA=`echo -e '\033[95m'`
+UNDERLINE=`echo -e '\033[4m'`
+BOLD=`echo -e '\033[1m'`
+RESET=`echo -e '\033[0m'`
+
+function a() {
+    IFS=',' read -ra ARGS <<< "$1"
+    for i in "${ARGS[@]}" ; do
+        if [ x"$i" = x ] ; then
+            i=,
+        fi
+        echo -n "s/$i/$2/g;"
+    done
+}
+
+unscapable=`a '\[,\]' "$RED&$RESET"`
+keywords=`a 'class,data,type,newtype,where,let,instance,family,role,if,then,else,case,of' "$UNDERLINE$GREEN&$RESET"`
+notation=`a '|,::,=>,\->, = ' "$RED&$RESET"``a '{,},(,),,' "$CYAN&$RESET"`
+capitals=`a "[A-Z][a-zA-Z0-9']*\>,()" "$BOLD&$RESET"`
+comments=`a '\-\-.*' "$BLUE&$RESET"`
+numbers=`a '\<[0-9]*\>' "$MAGENTA&$RESET"`
+# symbols=`a "[a-zA-Z0-9'() ][~!$%^&\*\-+=\/?.><|]*[a-zA-Z0-9'() ]" "$CYAN&$RESET"`
+symbols=`a "[>=]+" "$CYAN&$RESET"`
+# double_colon="s/::/$PURPLE&$RESET/g;"
+# right_arrow="s/\->/$PURPLE&$RESET/g;"
+# right_arrow2="s/=>/$PURPLE&$RESET/g;"
+# calc_operators="s/[+\-\/*]/$PURPLE&$RESET/g;"
+# char="s/'\\?.'/$RED&$RESET/g;"
+# string="s/\"[^\"]*\"/$RED&$RESET/g;"
+# parenthesis="s/[{}()]/$BLUE&$RESET/g;"
+# left_blacket="s/\[\([^09]\)/$BLUE[$RESET\1/g;"
+# right_blacket="s/\]/$BLUE&$RESET/g;"
+# no_instance="s/^\s*No instance/$RED&$RESET/g;"
+# interactive="s/^<[^>]*>/$RED&$RESET/g;"
+# capitals="s/[A-Z][a-zA-Z0-9']*/$BOLD&$RESET/g"
+
+subs="\
+    $unscapable\
+    $notation\
+    $capitals\
+    $keywords\
+    $comments\
+    $symbols\
+    $numbers\
+    "
+
+exec cabal exec -- ghci ${1+"$@"} 2>&1 | sed "$subs"
+#     sed "$load_failed\
+#          $load_done\
+#          $no_instance\
+#          $interactive\
+#          $double_colon\
+#          $right_arrow\
+#          $right_arrow2\
+#          $parenthesis\
+#          $left_blacket\
+#          $right_blacket\
+#          $double_colon\
+#          $calc_operators\
+#          $string\
+#          $char\
+#          $capitals"

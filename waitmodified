@@ -1,0 +1,12 @@
+#!/bin/sh
+
+FILENAMES="$@"
+
+# STR="$(stat -L "$FILENAMES" | sed -n 6p)"  
+# while [ "$STR" = "$(stat -L "$FILENAMES" | sed -n 6p)" ] ; do
+#     sleep 0.5
+# done
+STR="$(stat -L $FILENAMES)"
+while [ "$STR" = "$(stat -L $FILENAMES)" ] ; do
+    sleep 0.5
+done

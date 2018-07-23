@@ -1,13 +1,11 @@
 #!/usr/bin/env runhaskell
 
-{-# LANGUAGE OverloadedStrings #-}
-
+import Control.Concurrent
 import Control.Monad
 
-import Data.ByteString.Char8 as B
-import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.List as L
 
+import System.IO
 import Text.Parsec
 
 data Color = Black | Red | Green | Yellow | Blue | Magenta | Cyan | White
@@ -34,7 +32,7 @@ data Scheme = Scheme
 hscolour :: Scheme
 hscolour = Scheme 
     [Color Magenta]             [Color Magenta]             [Color Magenta]
-    [Color Red]                 [Color Cyan]                 [Bold]            
+    [Color Cyan]                [Color Red]                 [Bold]            
     [Color Cyan]                [Color Green, Underlined]   [Color Blue]      
     []
 
@@ -51,42 +49,39 @@ modN m = case m of
     Bold ->           1
     Underlined ->     4
 
-esc :: [Int] -> ByteString
-esc ms = B.pack $ 
-        "\ESC[" ++ L.foldl1 (\s s' -> s ++ ";" ++ s') (show <$> ms) ++ "m\STX"
+esc :: [Int] -> String
+esc ms = "\ESC[" ++ foldl1 (\s s' -> s ++ ";" ++ s') (show <$> ms) ++ "m\STX"
 
-escR :: ByteString 
+escR :: String 
 escR = "\ESC[0m\STX"
 
-colorize :: [Mod] -> ByteString -> ByteString
-colorize ms str = esc (modN <$> ms) `B.append` str `B.append` escR
+colorize :: [Mod] -> String -> String
+colorize ms str = esc (modN <$> ms) ++ str ++ escR
 
-type P = Parsec ByteString ()
+type P = Parsec String ()
 
-recol :: Scheme -> P ByteString
+recol :: Scheme -> P String
 recol sch = choice
-  [ do -- Punctuation symbols: (,),{,,
-      col (sPunc sch) (many1 $ oneOf puncs)
-  , do -- Syntax symbols: ::, =>, -<, lambda
-      try $ coldel (sSynt sch) (choice (try . string <$> synts)) (oneOf symbols)
+  [ do -- Syntax symbols: ::, =>, -<, lambda
+      try $ coldel (sPunc sch) (choice (try . string <$> puncs)) (oneOf symbols)
   , do -- Keywords
       try $ col (sKWords sch) (choice (try . string <$> keywords))
   , do -- Operators and their combinations: >>=, <>, ||
       col (sSymbol sch) (many1 $ oneOf symbols)
   , do -- skip unknown
-      liftM2 B.append (B.singleton <$> anyChar) r
+      liftM2 (:) anyChar r
   , do
       eof
-      return ""
+      return []
   ] where
 
-  r :: P ByteString
+  r :: P String
   r = recol sch
 
-  col :: [Mod] -> P String -> P ByteString
-  col mods op = liftM2 (\a b -> colorize mods (B.pack a) `B.append` b) op r
+  col :: [Mod] -> P String -> P String
+  col mods op = liftM2 (\a b -> colorize mods a ++ b) op r
 
-  coldel :: Show a => [Mod] -> P String -> P a -> P ByteString
+  coldel :: Show a => [Mod] -> P String -> P a -> P String
   coldel mods op outs = do
       a <- op
       notFollowedBy outs
@@ -97,25 +92,36 @@ keywords :: [String]
 keywords = [ "data", "type", "newtype", "instance", "class", "where", "let"
            , "family", "role", "if", "then", "else", "case", "of" ]
 
-synts :: [String]
-synts = L.sortOn (negate . L.length) 
-        ["[", "]", "#", "@", "|", "=", "\\", "->", "<-", "-<", "::", "=>", "->"]
-
-puncs :: [Char]
-puncs = "(){},"
+puncs :: [String]
+puncs = L.sortOn (negate . length) 
+        ["#", "@", "|", "=", "\\", "->", "<-", "-<", "::", "=>", "->"]
 
 symbols :: [Char]
 symbols = "~!$%^*-+=|&/.><"
 
--- instance Read Line where
---     readPrec = (return $ Line []) +++ do
---         l <- lexP
---         (\x -> x { unLine = l : unLine x }) <$> readPrec
--- 
--- rm :: String -> String
--- rm str = maybe str (show . unLine) (readMaybe str :: Maybe Line)
+fLine :: (String -> String) -> IO ()
+fLine f = fl "" where
+    fl str = do
+        c <- hLookAhead stdin
+        if c == '\n' then do
+            threadDelay 10000
+            putStrLn (f str)
+            void getLine
+            fLine f
+        else do
+            _ <- hGetChar stdin
+            fl (str ++ [c])
+
+intlines :: (String -> String) -> IO ()
+intlines f = do
+    ls <- lines <$> (sequence (repeat getChar))
+    forM_ ls $ \l -> do
+        forM_ (f <$> words l) putStr
+        putStrLn ""
+
 
 main :: IO ()
-main = BL.interact (onlines id) -- (onlines (\s -> either (pure s) id $ parse (recol hscolour) "" s))
-    where
-    onlines f = BL.unlines . fmap f . BL.lines 
+main = do
+    hSetBuffering stdout NoBuffering
+    forever (getChar >>= \c -> threadDelay 1000 >> putChar c)
+    -- intlines (\s -> either (pure s) id $ parse (recol hscolour) "" s)

@@ -1,0 +1,5 @@
+#!/bin/bash
+FILENAME=~/`uuidgen`.png
+scrot "$FILENAME" $@
+xclip -selection clipboard -t image/png -i "$FILENAME"
+rm "$FILENAME"

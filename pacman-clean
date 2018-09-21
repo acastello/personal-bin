@@ -1,0 +1,5 @@
+#!/bin/sh
+pacman -Qdtq | pacman -Rs -     # remove unwanted dependencies
+pacman -Qmq | pacman -Rs -      # remove packages w/o repository
+pacman -Scc
+

@@ -1,3 +1,5 @@
 #!/bin/bash
 
+mtimefind=""
+# while [[ 
 mtimefind $@ -type f | xargs -d "\n" sxiv

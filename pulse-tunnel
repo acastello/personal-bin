@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ x"$1" = x ] ; then
+    echo 'usage: pulse-tunnel SERVER'
+    return 1
+fi
+
+echo "load-module module-tunnel-sink server=$1 sink_name=e_$1" | pacmd

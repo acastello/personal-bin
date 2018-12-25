@@ -1,0 +1,18 @@
+#!/bin/sh
+
+DIARY="$HOME/.diary"
+if [ ! -d "$DIARY" ] ; then
+    mkdir "$DIARY" || exit 1
+fi
+
+if [ ! -f "$DIARY/newfile" ] ; then
+    vim -x "$DIARY/newfile"
+fi 
+
+DATE="$(date +%F)"
+
+if [ ! -f "$DIARY/$DATE" ] ; then
+    vim -c ":silent :saveas $DIARY/$DATE" -c :startinsert "$DIARY/newfile"
+else 
+    vim -c :startinsert "$DIARY/$DATE"
+fi 

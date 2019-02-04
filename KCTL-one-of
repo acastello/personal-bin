@@ -1,0 +1,8 @@
+#!/bin/sh
+
+NAM="${1:-"bff"}"
+
+kubectl get pod -l app="$NAM" -o json | jq '.items | map (select ((.metadata.deletionTimestamp == null) and (.status.conditions[] | select (.type == "Ready" and .status == "True")))) | .[0] | .metadata.name' -r
+
+
+# vim: tw=0

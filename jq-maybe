@@ -1,0 +1,5 @@
+#!/bin/bash
+
+while read -r lin || [ -n "$lin" ] ; do
+    echo "$lin" | jq "$@" 2>/dev/null || echo "$lin"
+done

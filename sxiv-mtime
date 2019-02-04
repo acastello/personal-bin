@@ -2,4 +2,4 @@
 
 mtimefind=""
 # while [[ 
-mtimefind $@ -type f | xargs -d "\n" sxiv
+mtimefind "$@" -type f | xargs -d "\n" sxiv

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -eu
+
+opts=($(echo "$1" | sed 's/\(.*\)\(\d+\).*/\1 \2/g'))
+echo "${opts[@]}"

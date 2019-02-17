@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -eu
+
+target="$1"
+shift
+
+IFS=$'\n'
+pods=($(kubectl "$@" get pods -l app="$target" -o json | jq -r '.items | map(.metadata.name) | .[]'))
+
+[[ "${#pods[*]}" -eq 0 ]] &&
+    exit
+
+invoq="tmux new-session 'kubectl $@ logs --follow ${pods[0]} | jq-maybe'"
+
+unset 'pods[0]'
+for pod in "${pods[@]}" ; do
+    invoq+=" \\; split-window -h 'kubectl $@ logs --follow $pod | jq-maybe'"
+done
+
+invoq+="  \\; select-layout even-horizontal"
+
+echo "$invoq"
+eval $invoq
+
+# vim: tw=0

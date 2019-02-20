@@ -2,5 +2,5 @@
 
 set -eu
 
-opts=($(echo "$1" | sed 's/\(.*\)\(\d+\).*/\1 \2/g'))
-echo "${opts[@]}"
+opts=($(echo "$1" | sed 's/\(.*\):\([0-9]\+\):.*/\1 \2/g'))
+vim "${opts[0]}" +${opts[1]}

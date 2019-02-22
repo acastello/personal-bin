@@ -1,0 +1,10 @@
+#!/bin/bash
+
+exclusions=('.git' 'vendor' 'test' 'models/' 'operations/' '// ')
+args=("$@")
+
+for e in "${exclusions[@]}"; do
+    args+=('-e' "$e")
+done
+
+grep -v "${args[@]}"

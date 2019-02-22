@@ -1,0 +1,3 @@
+#!/bin/sh
+
+urxvt -title floating_urxvt -geometry 80x40 "$@"

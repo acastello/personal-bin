@@ -1,0 +1,4 @@
+#!/bin/sh
+
+nc --allow ::1 -k -l 1080 -c 'timeout 0.25s
+nc --allow ::1 -C --ssl -k -l 1500 -c 'env >&2; timeout 0.5s cat -An >&2; echo -e "HTTP/1.1 200 OK\n\n $(date)"; echo -e "\n\e[1;32m...\e[0m" >&2' -v

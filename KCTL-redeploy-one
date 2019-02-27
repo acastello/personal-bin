@@ -3,18 +3,19 @@
 set -xueo pipefail
 
 service="$1"
+shift
 
-currimg="$(KCTL-one-of $service)"
+currimg="$(KCTL-one-of $service "$@")"
 
-currreps="$(kubectl get deployment bff -o jsonpath='{.status.readyReplicas}')"
+currreps="$(kubectl "$@" get deployment bff -o jsonpath='{.status.readyReplicas}')"
 
 if [ $currreps -gt 1 ]; then
-    kubectl scale --replicas=1 deployment "$service"
+    kubectl "$@" scale --replicas=1 deployment "$service"
     sleep 0.5
 fi
 
-kubectl scale --replicas=2 deployment "$service"
+kubectl "$@" scale --replicas=2 deployment "$service"
 read -n 1 -p "press any key"
-kubectl delete pod $currimg
+kubectl "$@" delete pod $currimg
 sleep 0.5
-kubectl scale --replicas=1 deployment "$1"
+kubectl "$@" scale --replicas=1 deployment "$service"

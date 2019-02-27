@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -xue
+
+port="$1"
+shift
+
+nc --allow 127.0.0.1 -v -C --ssl -k -l $port -c 'echo -en "HTTP/1.1 200 OK\n\r\n\r{}"' "$@"
+
+
+# vim: tw=0

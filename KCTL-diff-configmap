@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -xue
+
+if [ $# -eq 2 ]; then
+    target="$1"
+    lhsctx="$(kubectl config view -o json | jq '.["current-context"]' -r)"
+    rhsctx="$2"
+else
+    target="$1"
+    lhsctx="$2"
+    rhsctx="$3"
+fi
+
+diff --color=auto  \
+    <(kubectl --context="$lhsctx" get configmap "$target" -o json | jq .data)  \
+    <(kubectl --context="$rhsctx" get configmap "$target" -o json | jq .data)

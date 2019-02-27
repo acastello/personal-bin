@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -euo pipefail
+
+maxdepth=-1
+color=auto
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    -maxdepth)
+        maxdepth="$2"
+        shift;
+        ;;
+    -color)
+        color="$2"
+        shift;
+        ;;
+    *)
+        target="$1"
+        ;;
+    esac
+    shift
+done
+
+
+
+esc=$(echo -e "\e")
+colored_dir="s,\\(.*/\\)\\(.*/\\)\$,\\1${esc}[1;34m\\2${esc}[0m,g"
+colored_file="s,\\(.*/\\)\\(.*\\)\$,\\1${esc}[1;32m\\2${esc}[0m,g"
+
+output_color() {
+    if [[ "$color" == "always" || ( "$color" == "auto" && -t 1 ) ]]; then
+        echo "$1" | sed -e "$colored_dir" -e "$colored_file"
+    else
+        echo "$1"
+    fi
+}
+
+step() {
+    local dir entry
+    [[ $# -lt 1 ]] &&
+        exit 1
+    dir="$1"
+    if [[ "$dir" != */ ]] ; then
+        dir+="/"
+    fi
+
+    output_color "$dir"
+    if [ "$maxdepth" -ne 0 ] ; then
+        vault list $1 | tail -n +3 | while read entry; do
+            if [[ "$entry" == */ ]]; then
+                maxdepth=$(($maxdepth - 1)) step "$dir$entry" &
+            else
+                output_color "$dir$entry"
+            fi
+        done
+        wait
+    fi
+}
+
+step "$target"

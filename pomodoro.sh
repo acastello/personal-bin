@@ -1,5 +1,9 @@
 #!/bin/bash
 
+initial_delay=${1:-0}
+
+sleep "$initial_delay"
+
 while :; do
     notify-send -i view-refresh "Πομοδορο" "[$(date "+%H:%M")] back to work"
     sleep $((25 * 60))

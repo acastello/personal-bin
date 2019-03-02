@@ -1,3 +1,5 @@
 #!/bin/sh
 
-floating_urxvt -e vim-term ghci
+prog="ghci ${1:-~/.local/share/Math.hs}"
+
+floating_urxvt -e vim-term "$prog"

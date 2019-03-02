@@ -4,7 +4,7 @@ colors=('48;5;235' '48;5;236')
 i=0
 while read line ; do
     echo -en "\e[${colors[$i]}m"
-    printf "%-$(tput cols)s" "$line"
+    printf "%-*s" "$(tput cols)" "$line"
     echo -e "\e[0m"
     i=$((($i + 1) % ${#colors[@]}))
 done

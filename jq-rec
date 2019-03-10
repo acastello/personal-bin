@@ -1,0 +1,10 @@
+#!/bin/sh
+
+jq "$@" 'with_entries ({key, value:
+(.value | select(. != null)
+| . as $str | try @base64d catch $str
+| . as $obj
+| try fromjson catch $obj)})' # '(.reqHeader) |= . as $obj | (try fromjson catch .) as $j | $j'
+
+
+# vim: tw=0

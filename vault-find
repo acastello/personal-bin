@@ -3,6 +3,9 @@
 set -euo pipefail
 
 maxdepth=-1
+default_target=
+base_path=
+targets=()
 color=auto
 
 while [ $# -gt 0 ]; do
@@ -16,12 +19,15 @@ while [ $# -gt 0 ]; do
         shift;
         ;;
     *)
-        target="$1"
+        targets+=("$1")
         ;;
     esac
     shift
 done
 
+if [ ${#targets[@]} -eq 0 ]; then
+    targets=("$default_target")
+fi
 
 
 esc=$(echo -e "\e")
@@ -49,7 +55,7 @@ step() {
     if [ "$maxdepth" -ne 0 ] ; then
         vault list $1 | tail -n +3 | while read entry; do
             if [[ "$entry" == */ ]]; then
-                maxdepth=$(($maxdepth - 1)) step "$dir$entry" &
+                maxdepth=$(($maxdepth - 1)) step "$dir$entry"
             else
                 output_color "$dir$entry"
             fi
@@ -58,4 +64,10 @@ step() {
     fi
 }
 
-step "$target"
+for target in "${targets[@]}"; do
+    if [[ -n "$base_path" && /"$target"/ != */"$base_path"/* ]]; then
+        target="$base_path/$target"
+    fi
+
+    step "$target"
+done

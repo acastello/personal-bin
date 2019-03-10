@@ -1,3 +1,6 @@
 #!/bin/sh
 
-urxvt -title floating_urxvt -geometry 80x40 "$@"
+urxvt -title _floating_urxvt -geometry 80x40 "$@"
+
+
+# vim: tw=0

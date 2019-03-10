@@ -5,7 +5,7 @@ set -xue
 port="$1"
 shift
 
-nc --allow 127.0.0.1 -v -C --ssl -k -l $port -c 'echo -en "HTTP/1.1 200 OK\n\r\n\r{}"' "$@"
+nc --allow 127.0.0.1 -v -C --ssl -k -l $port -c 'timeout 0.5s cat -An >&2; echo -en "HTTP/1.1 200 OK\n\r\n\r{}"' "$@"
 
 
 # vim: tw=0

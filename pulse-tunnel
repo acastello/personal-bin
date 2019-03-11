@@ -5,4 +5,7 @@ if [ x"$1" = x ] ; then
     return 1
 fi
 
-echo "load-module module-tunnel-sink server=$1 sink_name=e_$1" | pacmd
+{
+    echo "load-module module-tunnel-sink server=$1 sink_name=e_$1"
+    echo "load-module module-tunnel-source server=$1 source_name=e_$1"
+} | pacmd

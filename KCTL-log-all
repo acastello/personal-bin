@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -euo pipefail
 
 target="$1"
 shift
@@ -8,10 +8,9 @@ shift
 IFS=$'\n'
 pods=($(kubectl "$@" get pods -l app="$target" -o json | jq -r '.items | map(.metadata.name) | .[]'))
 
-[[ "${#pods[*]}" -eq 0 ]] &&
-    exit
+[ "${#pods[*]}" -gt 0 ]
 
-invoq="tmux new-session 'kubectl $@ logs --follow ${pods[0]} | jq-maybe'"
+invoq="tmux -f /dev/null new-session 'kubectl $@ logs --follow ${pods[0]} | jq-maybe'"
 
 unset 'pods[0]'
 for pod in "${pods[@]}" ; do
@@ -20,7 +19,7 @@ done
 
 invoq+="  \\; select-layout even-horizontal"
 
-echo "$invoq"
+set -x
 eval $invoq
 
 # vim: tw=0

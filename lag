@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -xuo pipefail
+
+
+nmcli --terse device status | awk -F ':' '/\w:(ethernet|wifi):connected/{print $1}' | while read dev; do
+    sudo tc qdisc del dev "$dev" root
+    [ $# -gt 0 ] &&
+        sudo tc qdisc add dev "$dev" root netem delay "$1"ms &&
+          echo "lag set to $1"
+done
+
+
+# vim: tw=0

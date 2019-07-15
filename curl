@@ -7,7 +7,7 @@ fi
 esc=$(printf '\033')
 
 http() {
-    echo -ne "s_\\(HTTP/1.1\\) \\($1\\) \\(.*\\)\$_\\1 ${esc}$2\\2${esc}[0m ${esc}$3\\3${esc}[0m_"
+    echo -ne "s_\\(HTTP/[0-9.]\\+\\) \\($1\\) \\(.*\\)\$_\\1 ${esc}$2\\2${esc}[0m ${esc}$3\\3${esc}[0m_"
 }
 
 declare -A patterns

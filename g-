@@ -1,6 +1,7 @@
 #!/bin/bash
 
-exclusions=('\.git' 'vendor' 'test' 'models/' 'operations/' '// ' '\.bash_.*history')
+exclusions=('\.git' 'vendor' 'test' 'models/' 'operations/' '// '
+    '\.bash_.*history' '\.stack-work/' 'dist/')
 
 args=()
 for e in "${exclusions[@]}"; do

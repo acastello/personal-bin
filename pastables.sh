@@ -4020,4 +4020,4 @@ printf "😀 grinning face
 🇿🇼 flag: zimbabwe
 🏴󠁧󠁢󠁥󠁮󠁧󠁿 flag: england
 🏴󠁧󠁢󠁳󠁣󠁴󠁿 flag: scotland
-" | rofi -dmenu | awk '{print $1}' | xclip -selection clipboard
+" | rofi -dmenu | awk '{print $1}' | xclip -r -selection clipboard

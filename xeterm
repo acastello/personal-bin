@@ -8,5 +8,5 @@ done
 
 display=":$d"
 
-xinit /bin/sh -c 'xrdb -merge "$HOME/.Xresources" ; urxvt' \
+xinit /bin/sh -c 'xrdb -merge "$HOME/.Xresources" ; st' \
     -- `which Xephyr` $display $@

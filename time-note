@@ -1,3 +1,3 @@
 #!/bin/sh
 
-urxvt -title floating_urxvt -e vim ~/.time-note -c ':r!date +\%H:\%M' -c ':startinsert!'
+st -T _floating_wildcard -e vim ~/.time-note -c ':r!date +\%H:\%M' -c ':startinsert!'

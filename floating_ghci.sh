@@ -6,4 +6,4 @@ which ghci 2>/dev/null ||
 
 prog="$ghci ${1:-$HOME/.local/share/Math.hs}"
 
-floating_urxvt -e vim-term "$prog"
+st -T _floating_wildcard -e vim-term "$prog"

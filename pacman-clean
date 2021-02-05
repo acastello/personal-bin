@@ -1,5 +1,10 @@
 #!/bin/sh
-pacman -Qdtq | pacman -Rs -     # remove unwanted dependencies
-pacman -Qmq | pacman -Rs -      # remove packages w/o repository
-pacman -Scc
 
+OPTS=""
+[[ -t 0 ]] || OPTS="--noconfirm"
+
+pacman -Qdtq $OPTS | sudo pacman -Rs $OPTS -     # remove unwanted dependencies
+# pacman -Qmq | pacman -Rs -      # remove packages w/o repository
+sudo pacman -Scc $OPTS
+
+find ~/.cache/aurman/*/ -maxdepth 0 -mtime +0 -print -exec rm -rfv {} \;
